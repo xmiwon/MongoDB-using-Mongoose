@@ -5,49 +5,70 @@ const main = async () => {
   await mongoose.connect("mongodb://127.0.0.1:27017/fruitsDB");
 
   const fruitSchema = new mongoose.Schema({
-    name: String,
-    rating: Number,
+    name: {
+      type: String,
+      required: [true, "Missing name entry"]
+    },
+    rating: {
+      type: Number,
+      min: 1,
+      max: 10
+    },
     review: String,
   });
 
   const Fruit = mongoose.model("Fruit", fruitSchema);
 
-  const fruit = new Fruit({
-    name: "Apple",
-    rating: 7,
-    review: "Pretty solid as a fruit",
-  });
-
-  // await fruit.save();
-
 
 
   const personSchema = new mongoose.Schema({
     name: String,
-    age: Number
+    age: Number,
+    favoriteFruit: fruitSchema
   })
   const Person = mongoose.model("Person", personSchema)
+  const pineapple = new Fruit({
+    name: "Pineapple",
+    score: 9,
+    review: "Great fruit"
+  })
+  pineapple.save()
+
   const person = new Person({
     name: "John",
-    age: 37
+    age: 37,
+    favoriteFruit: pineapple
   })
 
   await person.save()
   const people = await Person.find()
   console.log(people)
 
-  fruitsCollection()
+  // fruitsCollection(Fruit)
 
   Fruit.find((err, fruits) => {
     if(err) {
       console.log(err)
     } else {
-      console.log(fruits)
+      fruits.map(fruit => console.log(fruit.name))
+      mongoose.connection.close()
     }
-  } )
+  })
+
+  Fruit.updateOne({_id: 'enter id here'}, {name: "Peach"}, (err) => {
+    err ? console.log(err) : console.log("Successfully updated the document.")
+  })
+//name or Id
+  Fruit.deleteOne({name: "enter your name here"}, (err) => {
+    err ? console.log(err) : console.log("Successfully deleted the document.")
+  })
+
+  Person.deleteMany({name: "John"}, (err) => {
+    err ? console.log(err) : console.log("Successfully deleted the document.")
+  })
 };
 
-const fruitsCollection = () => {
+const fruitsCollection = (Fruit) => {
   const kiwi = new Fruit({
     name: "Kiwi",
     score: 10,
@@ -76,3 +97,4 @@ const fruitsCollection = () => {
 }
 
 main().catch(console.error);
+
